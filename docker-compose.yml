@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: edunexa, POSTGRES_USER: edunexa, POSTGRES_PASSWORD: edunexa }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U edunexa"], interval: 5s, retries: 10 }
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgres://edunexa:edunexa@db:5432/edunexa
+      SECRET_KEY: change-me-in-production
+      DEBUG: "0"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}   # optional, free AI suggestions (Google AI Studio key)
+      SEED_DEMO: "1"   # set to 0 in production
+    depends_on: { db: { condition: service_healthy } }
+    ports: ["8000:8000"]
+  frontend:
+    build:
+      context: ./frontend
+      args: { VITE_API_URL: http://localhost:8000/api }
+    depends_on: [backend]
+    ports: ["3000:80"]
+volumes:
+  pgdata:

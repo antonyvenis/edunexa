@@ -1,0 +1,23 @@
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+backend/staticfiles/
+backend/sent_emails/
+
+# node
+node_modules/
+dist/
+dist-real/
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store

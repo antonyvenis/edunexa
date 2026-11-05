@@ -1,0 +1,20 @@
+name: Keep backend awake
+
+# Pings the Render free service so it does not sleep (and touches the database so Supabase does not pause).
+# Setup: GitHub repo, Settings, Secrets and variables, Actions, Variables, add HEALTH_URL = https://<your-service>.onrender.com/api/health/
+# Note: scheduled runs can be delayed by a few minutes, and GitHub disables schedules after 60 days without repo activity.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        env:
+          HEALTH_URL: ${{ vars.HEALTH_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then echo "HEALTH_URL variable is not set, skipping"; exit 0; fi
+          curl -fsS --retry 3 --retry-delay 10 --max-time 90 "$HEALTH_URL"
