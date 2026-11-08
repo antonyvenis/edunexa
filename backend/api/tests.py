@@ -14,7 +14,7 @@ class RoleTests(APITestCase):
     def setUp(self):
         c = Course.objects.create(name="Physics", code="P1")
         self.s1 = Student.objects.create(name="A", email="a@x.edu", roll_no="R1", course=c)
-        Student.objects.create(name="B", email="b@x.edu", roll_no="R2", course=c)
+        self.s2 = Student.objects.create(name="B", email="b@x.edu", roll_no="R2", course=c)
         User.objects.create_superuser("admin", password="pw12345678")
         Profile.objects.create(user=User.objects.create_user("stu", password="pw12345678"), role="student", student=self.s1)
         Profile.objects.create(user=User.objects.create_user("tea", password="pw12345678"), role="teacher")
@@ -36,7 +36,7 @@ class RoleTests(APITestCase):
     def test_student_sees_only_self_and_gets_pdf(self):
         self.login("stu")
         self.assertEqual(len(self.client.get("/api/students/").data), 1)
-        self.assertEqual(self.client.get("/api/students/2/report-card/").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/students/{self.s2.id}/report-card/").status_code, 404)
         r = self.client.get(f"/api/students/{self.s1.id}/report-card/")
         self.assertEqual(r.status_code, 200); self.assertTrue(r.content.startswith(b"%PDF"))
 
@@ -111,7 +111,7 @@ class RoleTests(APITestCase):
     def test_student_submits_but_cannot_grade(self):
         a = Assignment.objects.create(course=self.s1.course, title="HW", due_date=date.today())
         self.login("stu")
-        r = self.client.post("/api/submissions/", {"assignment": a.id, "student": 2, "answer": "done", "grade": 99}, format="json")
+        r = self.client.post("/api/submissions/", {"assignment": a.id, "student": self.s2.id, "answer": "done", "grade": 99}, format="json")
         self.assertEqual(r.status_code, 201)
         sub_ = Submission.objects.get()
         self.assertEqual((sub_.student_id, sub_.grade), (self.s1.id, None))
@@ -126,7 +126,7 @@ class RoleTests(APITestCase):
         self.login("admin")
         ok = self.client.post("/api/loans/", {"book": book.id, "student": self.s1.id, "issued_on": str(date.today() - timedelta(days=17)), "due_on": str(date.today() - timedelta(days=3))})
         self.assertEqual(ok.status_code, 201); self.assertEqual(ok.data["fine"], 15)
-        again = self.client.post("/api/loans/", {"book": book.id, "student": 2, "issued_on": str(date.today()), "due_on": str(date.today())})
+        again = self.client.post("/api/loans/", {"book": book.id, "student": self.s2.id, "issued_on": str(date.today()), "due_on": str(date.today())})
         self.assertEqual(again.status_code, 400)
         self.login("stu")
         self.assertEqual(len(self.client.get("/api/loans/").data), 1)
@@ -140,7 +140,7 @@ class RoleTests(APITestCase):
         blocked = self.client.get(f"/api/students/{self.s1.id}/hall-ticket/")
         self.assertEqual(blocked.status_code, 400); self.assertIn("fees pending", blocked.data["detail"])
         self.assertEqual(self.client.get("/api/students/eligibility/").data[0]["eligible"], False)
-        self.assertEqual(self.client.get("/api/students/2/hall-ticket/").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/students/{self.s2.id}/hall-ticket/").status_code, 404)
     def test_notifications_are_private_and_markable(self):
         Announcement.objects.create(title="Holiday", body="Campus closed Friday", date=date.today())
         self.login("stu")
@@ -153,7 +153,7 @@ class RoleTests(APITestCase):
 
     def test_leave_workflow_and_permissions(self):
         self.login("par")
-        r = self.client.post("/api/leaves/", {"student": 2, "from_date": str(date.today()), "to_date": str(date.today()), "reason": "Wedding", "status": "approved"}, format="json")
+        r = self.client.post("/api/leaves/", {"student": self.s2.id, "from_date": str(date.today()), "to_date": str(date.today()), "reason": "Wedding", "status": "approved"}, format="json")
         self.assertEqual(r.status_code, 201)
         leave = LeaveRequest.objects.get()
         self.assertEqual((leave.student_id, leave.status), (self.s1.id, "pending"))
@@ -179,7 +179,7 @@ class RoleTests(APITestCase):
         room = HostelRoom.objects.create(block="A", number="1", capacity=1)
         self.login("admin")
         self.assertEqual(self.client.post("/api/hostelstay/", {"student": self.s1.id, "room": room.id, "joined_on": str(date.today())}).status_code, 201)
-        self.assertEqual(self.client.post("/api/hostelstay/", {"student": 2, "room": room.id, "joined_on": str(date.today())}).status_code, 400)
+        self.assertEqual(self.client.post("/api/hostelstay/", {"student": self.s2.id, "room": room.id, "joined_on": str(date.today())}).status_code, 400)
         route = BusRoute.objects.create(name="R1", vehicle_no="X", driver="D", driver_phone="1", morning_time="07:00", evening_time="17:00", stops="A,B")
         TransportPass.objects.create(student=self.s1, route=route, stop="A")
         TransportPass.objects.create(student=Student.objects.get(roll_no="R2"), route=route, stop="B")
