@@ -16,11 +16,11 @@
   <img alt="JWT" src="https://img.shields.io/badge/Auth-JWT%20%2B%20refresh-000000?logo=jsonwebtokens&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white">
   <img alt="Tests" src="https://img.shields.io/badge/API%20tests-33%20passing-brightgreen">
-  <img alt="CI" src="https://github.com/YOUR-USERNAME/edunexa/actions/workflows/ci.yml/badge.svg">
+  <img alt="CI" src="https://github.com/antonyvenis/edunexa/actions/workflows/ci.yml/badge.svg">
 </p>
 
 <p align="center">
-  <a href="https://YOUR-DEMO.vercel.app/tour"><b>Live demo and guided tour</b></a> ·
+  <a href="https://https://edunexa-demo.vercel.app/tour"><b>Live demo and guided tour</b></a> ·
   <a href="https://YOUR-API.onrender.com/api/docs/"><b>API docs (Swagger)</b></a> ·
   <a href="#quick-start"><b>Run it locally</b></a>
 </p>
