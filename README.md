@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="https://https://edunexa-demo.vercel.app/tour"><b>Live demo and guided tour</b></a> ·
+  <a href="https://edunexa-demo.vercel.app/tour"><b>Live demo and guided tour</b></a> ·
   <a href="https://YOUR-API.onrender.com/api/docs/"><b>API docs (Swagger)</b></a> ·
   <a href="#quick-start"><b>Run it locally</b></a>
 </p>
